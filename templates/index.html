@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="../static/css/variables.css">
+    <link rel="stylesheet" href="../static/css/chat.css">
+    <link rel="stylesheet" href="../static/css/modal.css">
+    <link rel="stylesheet" href="../static/css/styles.css">
+    <title>Pet Daisy</title>
+</head>
+<body>
+    <button type="button" class="circle-icon-btn" id="profile" onclick="openModal()">+</button>
+    <h2 id="counter">Daisy has been pet {{ .TotalPets }} times!</h2>
+    <h3 id="personal-counter">You have pet her {{ .UserPets }} times!</h3>
+    <div id="game-container">
+        <div id="chat-container">
+            <div id="chat-message-container"></div>
+            <input type="text" name="chat" id="chat-input">
+            <p id="player-count" style="padding: 0 10px 8px; margin: 0;">Online Petters: 0</p>
+        </div>
+        <div id="daisy-container">
+            <img src="../static/images/DAISY.png" alt="daisy the dog" id="daisy-image"/>
+        </div>
+        <div id="leaderboard-container">
+            <table>
+                <thead>
+                <tr>
+                    <th>Place</th>
+                    <th>Display Name</th>
+                    <th>Pet Count</th>
+                </tr>
+                </thead>
+                <tbody id="leaderboard"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="hidden" id="modal-container">
+        <div id="modal">
+            <div>
+                <h2>Sync Code: <span style="font-family: monospace;">{{ .SyncCode }}</span></h2>
+                <p>You can use this code to sync between devices or recover data. Store it somewhere nice.</p>
+                <form id="sync-code-form">
+                    <div class="control-group">
+                        <label for="sync-code-input">Sync Code</label>
+                        <input type="text" id="sync-code-input" />
+                    </div>
+                </form> 
+            </div>
+            <hr>
+            <h2><a href="/roadmap" target="_blank">Roadmap</a></h2>
+            <button id="close-modal" type="button" onclick="closeModal()">Close</button>
+
+            <h2>Controls</h2>
+            <hr>
+            <form style="display: flex; justify-content: space-between; flex-direction: column;">
+                <div class="control-group">
+                    <label for="chat-toggle">Show Chat</label>
+                    <input type="checkbox" id="chat-toggle" checked />
+                </div>
+                <div class="control-group">
+                    <label for="leaderboard-toggle">Show Leaderboard</label>
+                    <input type="checkbox" id="leaderboard-toggle" checked />
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let personalNumber = {{ .UserPets }};
+        let displayName = {{ .User }};
+        const wsURL = {{ .WS_URL }};
+    </script>
+    <script src="../static/scripts/shared.js"></script>
+    <script src="../static/scripts/chat.js"></script>
+    <script src="../static/scripts/modal.js"></script>
+    <script src="../static/scripts/leaderboard.js"></script>
+    <script src="../static/scripts/toast.js"></script>
+    <script src="../static/scripts/script.js"></script>
+</body>
+</html>
