@@ -49,7 +49,7 @@ const charset = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 // generateSyncCode generates a random 5 digit 'syncCode' used for account recovery/syncing
 func generateSyncCode() string {
-	code := make([]byte, 5)
+	code := make([]byte, 6)
 	for i := range code {
 		code[i] = charset[rand.Intn(len(charset))]
 	}

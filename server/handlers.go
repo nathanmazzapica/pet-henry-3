@@ -26,7 +26,7 @@ func ServeHome(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func ServeError(w http.ResponseWriter) {
+func ServeError(w http.ResponseWriter, _ *http.Request) {
 	tmpl := template.Must(template.ParseFiles("templates/error.html"))
 
 	_ = tmpl.Execute(w, nil)

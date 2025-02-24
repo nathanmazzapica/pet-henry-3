@@ -59,7 +59,7 @@ func loadFromDatabase() {
 		fmt.Println(res)
 	}
 
-	res2, err := RDB.ZRevRangeWithScores(ctx, "user_pets", 0, -1).Result()
+	res2, err := RDB.ZRevRangeWithScores(ctx, "user_pets", 0, 9).Result()
 	log.Println(res2)
 
 	log.Println("Data loaded into cache")
