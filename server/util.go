@@ -13,7 +13,7 @@ import (
 func prepareUserData(w http.ResponseWriter, r *http.Request) *models.User {
 	var user *models.User
 
-	userIDCookie, err := r.Cookie("uid_temp")
+	userIDCookie, err := GetUserIDCookie(r)
 
 	if err != nil {
 		switch {

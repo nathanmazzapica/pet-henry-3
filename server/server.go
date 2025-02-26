@@ -6,6 +6,8 @@ func InitRoutes() {
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	http.HandleFunc("/", ServeHome)
 	http.HandleFunc("/error", ServeError)
+
+	http.HandleFunc("/ws", HandleConnections)
 }
 
 func StartHTTP() error {

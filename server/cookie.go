@@ -6,6 +6,8 @@ import (
 	"time"
 )
 
+const UserIDCookieName = "user_id_daisy"
+
 func NewUserCookie(userID string, r *http.Request) *http.Cookie {
 	domain := ""
 
@@ -14,7 +16,7 @@ func NewUserCookie(userID string, r *http.Request) *http.Cookie {
 	}
 
 	cookie := http.Cookie{
-		Name:     "uid_temp",
+		Name:     UserIDCookieName,
 		Value:    userID,
 		HttpOnly: true,
 		Expires:  time.Now().AddDate(10, 0, 0),
@@ -22,4 +24,13 @@ func NewUserCookie(userID string, r *http.Request) *http.Cookie {
 	}
 
 	return &cookie
+}
+
+func GetCookie(r *http.Request, name string) (*http.Cookie, error) {
+	cookie, err := r.Cookie(name)
+	return cookie, err
+}
+
+func GetUserIDCookie(r *http.Request) (*http.Cookie, error) {
+	return GetCookie(r, UserIDCookieName)
 }
