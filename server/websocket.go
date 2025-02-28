@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/json"
 	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
@@ -10,8 +11,8 @@ import (
 )
 
 type Action struct {
-	actionType string
-	data       map[string]interface{}
+	Type string
+	Data map[string]interface{}
 }
 
 // fine for development
@@ -22,6 +23,7 @@ var upgrader = websocket.Upgrader{
 var (
 	clients     = make(map[*models.Client]bool)
 	clientsLock sync.RWMutex
+	chats       = make(chan Action)
 )
 
 func HandleConnections(w http.ResponseWriter, r *http.Request) {
@@ -74,7 +76,46 @@ func readMessages(client *models.Client) {
 			break
 		}
 
-		log.Println("Received message:", string(msg))
+		log.Printf("Received message from %s: %v", client.User.DisplayName, string(msg))
+		handleMessage(client, msg)
+	}
+}
+
+func handleMessage(client *models.Client, msg []byte) {
+	var action Action
+	if err := json.Unmarshal(msg, &action); err != nil {
+		log.Println("Invalid JSON:", err)
+		return
+	}
+
+	switch action.Type {
+	case "pet":
+		log.Println("handle user pet")
+	case "chat":
+		message, ok := action.Data["message"].(string)
+		if !ok {
+			log.Println("Invalid message:", action.Data["message"])
+		}
+		log.Printf("Received message from %s: %s", client.User.DisplayName, message)
+		handleChatMessage(client, action)
+	default:
+		log.Println("Unknown action:", action.Type)
+	}
+}
+
+func handleChatMessage(client *models.Client, chat Action) {
+	// check for potty language later
+	chat.Data["sender"] = client.User.DisplayName
+	chats <- chat
+}
+
+func broadcastChat() {
+	for {
+		newChat := <-chats
+
+		for client := range clients {
+			networkAction(client, prepareActionJSON(newChat))
+		}
 	}
 }
 

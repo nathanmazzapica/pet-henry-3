@@ -1,8 +1,10 @@
 package server
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
 	"pet-henry-3/data"
@@ -43,5 +45,34 @@ func prepareHomeData(user *models.User) models.HomeData {
 		UserPets:  user.PetCount,
 		TotalPets: game.Counter,
 		WS_URL:    "ws://localhost:8080/ws",
+	}
+}
+
+func prepareActionJSON(action Action) []byte {
+	json, err := json.Marshal(action)
+
+	if err != nil {
+		log.Println("Error preparing ActionJSON:", err)
+		return nil
+	}
+
+	return json
+}
+
+func networkAction(client *models.Client, action []byte) {
+
+	if action == nil {
+		log.Println("Error preparing ActionJSON")
+		return
+	}
+
+	err := client.Conn.WriteMessage(websocket.TextMessage, action)
+
+	if err != nil {
+		log.Printf("Error writing to client: %v DROPPING CONNECTION\n", err)
+		client.Conn.Close()
+		clientsLock.Lock()
+		delete(clients, client)
+		clientsLock.Unlock()
 	}
 }

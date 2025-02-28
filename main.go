@@ -23,6 +23,7 @@ func main() {
 	data.InitCache()
 
 	server.InitRoutes()
+	server.InitBroadcasts()
 
 	fmt.Println("===============\nPET DAISY STARTED\n===============\n\n")
 	server.StartHTTP()

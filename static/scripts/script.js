@@ -30,6 +30,7 @@ ws.onopen = () => {
 
 ws.onmessage = (event) => {
     const data = JSON.parse(event.data);
+    console.log(data);
 
     if (data.name === "petCounter") {
         let prettyCount = Number(data.message).toLocaleString()
@@ -65,6 +66,8 @@ ws.onmessage = (event) => {
 
     chatMessageContainer.appendChild(buildMessage(data.name, data.message));
     chatMessageContainer.scrollTop = chatMessageContainer.scrollHeight;
+
+
 
 }
 

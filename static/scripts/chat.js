@@ -56,8 +56,10 @@ function sendMessage(message) {
     }
 
     chatMessage = {
-        name: displayName,
-        message
+        type: "chat",
+        data: {
+            message
+        }
     }
 
     ws.send(JSON.stringify(chatMessage));
