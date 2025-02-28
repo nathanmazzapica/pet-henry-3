@@ -7,6 +7,10 @@
  * @typedef {{display_name: string, pet_count: number, position: number}} leaderboardData
  */
 
+/**
+ *
+ * @typedef {{type: string, data: {} }} event
+ */
 
 const daisyContainer = document.getElementById('daisy-container');
 const daisy = document.getElementById("daisy-image");

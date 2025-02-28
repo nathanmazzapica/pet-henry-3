@@ -33,6 +33,17 @@ func InitCache() {
 	log.Println("Cache initialized")
 }
 
+func IncrementUserPet(u string) {
+	res := RDB.ZIncrBy(ctx, "user_pets", 1, u)
+	log.Println(res)
+	printTopTen()
+}
+
+func printTopTen() {
+	res, err := RDB.ZRevRangeWithScores(ctx, "user_pets", 0, 9).Result()
+	fmt.Println(res, err)
+}
+
 // loadFromDatabase loads the user data from db into cache
 func loadFromDatabase() {
 	log.Println("Loading data into redis...")
@@ -51,12 +62,11 @@ func loadFromDatabase() {
 			log.Fatal("Error scanning user rows: ", err)
 		}
 		users = append(users, user)
-		res, rErr := RDB.ZAdd(ctx, "user_pets", redis.Z{Score: float64(user.PetCount), Member: user.UserID}).Result()
+		_, rErr := RDB.ZAdd(ctx, "user_pets", redis.Z{Score: float64(user.PetCount), Member: user.UserID}).Result()
 
 		if rErr != nil {
 			log.Fatal("Error adding user to cache: ", rErr)
 		}
-		fmt.Println(res)
 	}
 
 	res2, err := RDB.ZRevRangeWithScores(ctx, "user_pets", 0, 9).Result()
