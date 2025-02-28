@@ -6,3 +6,7 @@ type User struct {
 	SyncCode    string `field:"sync_code"`
 	PetCount    int    `field:"pet_count"`
 }
+
+func (u *User) PetDaisy() {
+	u.PetCount++
+}

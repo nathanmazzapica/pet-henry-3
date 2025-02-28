@@ -12,6 +12,7 @@ func InitRoutes() {
 
 func InitBroadcasts() {
 	go broadcastChat()
+	go broadcastEvent()
 }
 
 func StartHTTP() error {

@@ -6,13 +6,14 @@ import (
 	"log"
 	"net/http"
 	"pet-henry-3/data"
+	"pet-henry-3/game"
 	"pet-henry-3/models"
 	"sync"
 )
 
-type Action struct {
-	Type string
-	Data map[string]interface{}
+type Event struct {
+	Type string                 `json:"type"`
+	Data map[string]interface{} `json:"data"`
 }
 
 // fine for development
@@ -23,7 +24,8 @@ var upgrader = websocket.Upgrader{
 var (
 	clients     = make(map[*models.Client]bool)
 	clientsLock sync.RWMutex
-	chats       = make(chan Action)
+	chats       = make(chan Event)
+	events      = make(chan Event)
 )
 
 func HandleConnections(w http.ResponseWriter, r *http.Request) {
@@ -82,28 +84,36 @@ func readMessages(client *models.Client) {
 }
 
 func handleMessage(client *models.Client, msg []byte) {
-	var action Action
-	if err := json.Unmarshal(msg, &action); err != nil {
+	var clientEvent Event
+	if err := json.Unmarshal(msg, &clientEvent); err != nil {
 		log.Println("Invalid JSON:", err)
 		return
 	}
 
-	switch action.Type {
+	switch clientEvent.Type {
 	case "pet":
-		log.Println("handle user pet")
+		handlePet(client, clientEvent)
 	case "chat":
-		message, ok := action.Data["message"].(string)
-		if !ok {
-			log.Println("Invalid message:", action.Data["message"])
-		}
-		log.Printf("Received message from %s: %s", client.User.DisplayName, message)
-		handleChatMessage(client, action)
+		handleChatMessage(client, clientEvent)
 	default:
-		log.Println("Unknown action:", action.Type)
+		log.Println("Unknown clientEvent:", clientEvent.Type)
 	}
 }
 
-func handleChatMessage(client *models.Client, chat Action) {
+func handlePet(client *models.Client, petEvent Event) {
+	game.IncrementPetCounter()
+	petEvent.Data["count"] = game.Counter
+	events <- petEvent
+	client.User.PetDaisy()
+	data.IncrementUserPet(client.User.UserID)
+}
+
+func handleChatMessage(client *models.Client, chat Event) {
+	_, ok := chat.Data["message"].(string)
+	if !ok {
+		log.Println("Invalid message:", chat.Data["message"])
+		return
+	}
 	// check for potty language later
 	chat.Data["sender"] = client.User.DisplayName
 	chats <- chat
@@ -114,7 +124,16 @@ func broadcastChat() {
 		newChat := <-chats
 
 		for client := range clients {
-			networkAction(client, prepareActionJSON(newChat))
+			networkEvent(client, prepareEventJSON(newChat))
+		}
+	}
+}
+
+func broadcastEvent() {
+	for {
+		newEvent := <-events
+		for client := range clients {
+			networkEvent(client, prepareEventJSON(newEvent))
 		}
 	}
 }

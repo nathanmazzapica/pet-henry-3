@@ -29,45 +29,44 @@ ws.onopen = () => {
 
 
 ws.onmessage = (event) => {
-    const data = JSON.parse(event.data);
-    console.log(data);
+    /**
+     * @type event
+     */
+    const eventJSON = JSON.parse(event.data);
+    console.log(eventJSON);
 
-    if (data.name === "petCounter") {
-        let prettyCount = Number(data.message).toLocaleString()
-        counter.textContent = `Daisy has been pet ${prettyCount} times!`
-        return;
+    const eventType = eventJSON.type;
+
+    switch (eventType) {
+        case "chat":
+            chatMessageContainer.appendChild(buildMessage(eventJSON.data.sender, eventJSON.data.message));
+            chatMessageContainer.scrollTop = chatMessageContainer.scrollHeight;
+            break;
+        case "pet":
+            let prettyCount = Number(eventJSON.data.count).toLocaleString()
+            counter.textContent = `Daisy has been pet ${prettyCount} times!`
+            break;
+        case "notification":
+           displayToast("Notification", eventJSON.data.content, 2000)
+            break;
+        case "playerCountUpdate":
+            document.getElementById("player-count").innerText = `Online Players: ${eventJSON.data.count}`;
+            break;
+        case "leaderboardUpdate":
+            alert("leaderboard not implemented")
+            break;
+        default:
+            alert("unknown event type received!")
+            return;
     }
 
-    if (data.name === "playerCount") {
-        console.log("handle player count!")
-        console.log(data.message);
-        document.getElementById("player-count").innerText = `Online Players: ${data.message}`;
-        return;
-    }
 
-    if (data.name === "server") {
-        console.log("handle server notification")
-        console.log(data.message)
-        displayToast("Notification", data.message, 2000);
-        chatMessageContainer.appendChild(displayServerChatNotification(data.message));
-        chatMessageContainer.scrollTop = chatMessageContainer.scrollHeight;
-        return;
-    }
-
-    if (data.name === "leaderboard") {
+    if (eventJSON.name === "leaderboard") {
         console.log("handle leaderboard notification")
-        console.log(JSON.parse(data.message));
-        displayLeaderboard(JSON.parse(data.message));
-        chatMessageContainer.scrollTop = chatMessageContainer.scrollHeight;
+        console.log(JSON.parse(eventJSON.message));
+        displayLeaderboard(JSON.parse(eventJSON.message));
         return;
     }
-
-    console.log(`${data.name}: ${data.message}`);
-
-    chatMessageContainer.appendChild(buildMessage(data.name, data.message));
-    chatMessageContainer.scrollTop = chatMessageContainer.scrollHeight;
-
-
 
 }
 
@@ -78,11 +77,12 @@ ws.onclose = () => {
 function petDaisy() {
     personalNumber++;
     petMessage = {
-        name: displayName,
-        message: `$!pet;${personalNumber}`,
+        type: "pet",
+        data: {}
     }
     ws.send(JSON.stringify(petMessage));
-    personalCounter.innerText = `You have pet her ${personalNumber} time${personalNumber === 1 ? "" : "s"}!`;
+    prettyNumber = personalNumber.toLocaleString();
+    personalCounter.innerText = `You have pet her ${prettyNumber} time${personalNumber === 1 ? "" : "s"}!`;
 }
 
 /**

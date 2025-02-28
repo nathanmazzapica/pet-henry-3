@@ -48,8 +48,8 @@ func prepareHomeData(user *models.User) models.HomeData {
 	}
 }
 
-func prepareActionJSON(action Action) []byte {
-	json, err := json.Marshal(action)
+func prepareEventJSON(event Event) []byte {
+	json, err := json.Marshal(event)
 
 	if err != nil {
 		log.Println("Error preparing ActionJSON:", err)
@@ -59,14 +59,14 @@ func prepareActionJSON(action Action) []byte {
 	return json
 }
 
-func networkAction(client *models.Client, action []byte) {
+func networkEvent(client *models.Client, event []byte) {
 
-	if action == nil {
+	if event == nil {
 		log.Println("Error preparing ActionJSON")
 		return
 	}
 
-	err := client.Conn.WriteMessage(websocket.TextMessage, action)
+	err := client.Conn.WriteMessage(websocket.TextMessage, event)
 
 	if err != nil {
 		log.Printf("Error writing to client: %v DROPPING CONNECTION\n", err)
