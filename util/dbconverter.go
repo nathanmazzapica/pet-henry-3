@@ -47,6 +47,10 @@ func ConvertLegacy() {
 	log.Println("Retrieving legacy users...")
 	rows, err := sqlite.Query("SELECT * FROM users")
 
+	if err != nil {
+		log.Fatalf("Error retrieving users: %v", err)
+	}
+
 	legacyUsers := []models.User{}
 
 	for rows.Next() {

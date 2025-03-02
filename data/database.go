@@ -32,8 +32,13 @@ func InitDatabase() {
 
 	pingErr := DB.Ping()
 	if pingErr != nil {
-		log.Fatalf("Error connecting to the database: ")
-		panic(pingErr)
+		log.Println("Error initializing database: ")
+		log.Println("DB_USER: ", os.Getenv("DB_USER"))
+		log.Println("DB_PASS: ", os.Getenv("DB_PASS"))
+		log.Println("DB_HOST: ", os.Getenv("DB_HOST"))
+		log.Println("DB_NAME: ", os.Getenv("DB_NAME"))
+
+		log.Fatalf("Error connecting to the database! %v", pingErr)
 	}
 
 	log.Println("Database initialized")

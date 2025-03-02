@@ -22,6 +22,8 @@ func main() {
 
 	data.InitCache()
 
+	//util.ConvertLegacy()
+
 	server.InitRoutes()
 	server.InitBroadcasts()
 
