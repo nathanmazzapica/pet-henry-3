@@ -44,7 +44,7 @@ func prepareHomeData(user *models.User) models.HomeData {
 		SyncCode:  user.SyncCode,
 		UserPets:  user.PetCount,
 		TotalPets: game.Counter,
-		WS_URL:    "ws://localhost:8080/ws",
+		WS_URL:    "ws://localhost:8081/ws",
 	}
 }
 

@@ -21,6 +21,7 @@ func main() {
 	data.InitPetCounter()
 
 	data.InitCache()
+	data.InitLeaderboard()
 
 	//util.ConvertLegacy()
 

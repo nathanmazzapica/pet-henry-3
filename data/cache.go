@@ -74,3 +74,16 @@ func loadFromDatabase() {
 
 	log.Println("Data loaded into cache")
 }
+
+func GetTopPlayersWithScores() []struct {
+	user  string
+	score int
+} {
+	if res, err := RDB.ZRevRangeWithScores(ctx, "user_pets", 0, 9).Result(); err == nil {
+		for _, entry := range res {
+			fmt.Println(entry.Member, entry.Score)
+		}
+	}
+
+	return nil
+}

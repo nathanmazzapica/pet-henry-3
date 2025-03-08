@@ -43,8 +43,8 @@ ws.onmessage = (event) => {
             chatMessageContainer.scrollTop = chatMessageContainer.scrollHeight;
             break;
         case "pet":
-            let prettyCount = Number(eventJSON.data.count).toLocaleString()
-            counter.textContent = `Daisy has been pet ${prettyCount} times!`
+            totalPets = eventJSON.data.count
+            updateCountDisplay()
             break;
         case "notification":
            displayToast("Notification", eventJSON.data.content, 2000)
@@ -71,6 +71,7 @@ ws.onmessage = (event) => {
 }
 
 ws.onclose = () => {
+    alert("why?")
     window.location.href = "/error"
 }
 
@@ -81,6 +82,13 @@ function petDaisy() {
         data: {}
     }
     ws.send(JSON.stringify(petMessage));
+    updateCountDisplay()
+}
+
+function updateCountDisplay() {
+    let prettyCount = totalPets.toLocaleString()
+    counter.textContent = `Daisy has been pet ${prettyCount} times!`
+
     prettyNumber = personalNumber.toLocaleString();
     personalCounter.innerText = `You have pet her ${prettyNumber} time${personalNumber === 1 ? "" : "s"}!`;
 }
@@ -161,3 +169,5 @@ window.addEventListener("load", () => {
         daisyReferenceSize = daisySize;
     }
 );
+
+updateCountDisplay()
