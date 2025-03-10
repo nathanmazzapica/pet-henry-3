@@ -1,5 +1,7 @@
 package models
 
+import "fmt"
+
 type User struct {
 	UserID      string `field:"user_id"`
 	DisplayName string `field:"display_name"`
@@ -9,4 +11,8 @@ type User struct {
 
 func (u *User) PetDaisy() {
 	u.PetCount++
+}
+
+func (u *User) GetHashKey() string {
+	return fmt.Sprintf("users:%s", u.UserID)
 }

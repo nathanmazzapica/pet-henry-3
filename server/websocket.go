@@ -40,9 +40,20 @@ func HandleConnections(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Println("Fetching user data for", r.RemoteAddr)
+	// check if user in cache
+	// if yes, retrieve from cache
+	// else, retrieve from db & cache
+	log.Println("TESTING USER FETCH CACHE")
+	user, err := data.GetFromHash(userID.Value)
 
-	user, err := data.GetUserFromDB(userID.Value)
+	if user == nil {
+		log.Println("Fetching user data for", r.RemoteAddr, "from DB")
+		user, err = data.GetUserFromDB(userID.Value)
+		// reflect on error handling .. .
+		data.InsertIntoHash(user)
+	} else {
+		log.Printf("Retrieved user data for %s{%v} from cache", r.RemoteAddr, user.DisplayName)
+	}
 
 	if err != nil {
 		log.Println("Error establishing connection with", r.RemoteAddr, ":", err)

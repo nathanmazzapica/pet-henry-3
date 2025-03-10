@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"pet-henry-3/models"
+	"strconv"
 )
 
 var ctx = context.Background()
@@ -62,6 +63,7 @@ func loadFromDatabase() {
 			log.Fatal("Error scanning user rows: ", err)
 		}
 		users = append(users, user)
+		log.Println("== Populating Leaderboard Set ==")
 		_, rErr := RDB.ZAdd(ctx, "user_pets", redis.Z{Score: float64(user.PetCount), Member: user.UserID}).Result()
 
 		if rErr != nil {
@@ -75,15 +77,63 @@ func loadFromDatabase() {
 	log.Println("Data loaded into cache")
 }
 
-func GetTopPlayersWithScores() []struct {
-	user  string
-	score int
-} {
+func InsertIntoHash(user *models.User) {
+	hashFields := []string{
+		"DisplayName", user.DisplayName,
+		"PetCount", strconv.Itoa(user.PetCount),
+		"SyncCode", user.SyncCode,
+	}
+	log.Println(hashFields)
+	res, err := RDB.HSet(ctx, user.GetHashKey(), hashFields).Result()
+
+	if err != nil {
+		log.Printf("== ERROR SETTING HASH FIELDS FOR USER %s ==\n", user.DisplayName)
+		log.Println("Error setting hash fields: ", err)
+		log.Println("==============================================================")
+	}
+
+	log.Println("Success:", res)
+}
+
+func GetFromHash(uid string) (*models.User, error) {
+	// hacky quick thing to get key from uid
+	uid = fmt.Sprintf("users:%s", uid)
+	exists, err := RDB.Exists(ctx, uid).Result()
+
+	if err != nil {
+		log.Println("Error checking for user:", err)
+	}
+
+	if exists == 0 {
+		log.Println("User does not exist", uid)
+		return nil, nil
+	}
+
+	log.Println("User found:", uid)
+
+	user, err := RDB.HGetAll(ctx, uid).Result()
+	if err != nil {
+		log.Println("Error getting user from database:", err)
+	}
+
+	fmt.Println(user)
+
+	return &models.User{}, err
+}
+
+type playerScore struct {
+	user     string `redis:"user"`
+	petCount int64
+}
+
+func GetTopPlayersWithScores() []playerScore {
+	var players []playerScore
 	if res, err := RDB.ZRevRangeWithScores(ctx, "user_pets", 0, 9).Result(); err == nil {
 		for _, entry := range res {
 			fmt.Println(entry.Member, entry.Score)
+			players = append(players, playerScore{user: entry.Member.(string), petCount: int64(entry.Score)})
 		}
 	}
 
-	return nil
+	return players
 }
