@@ -35,8 +35,14 @@ func InitCache() {
 }
 
 func IncrementUserPet(u string) {
+	// This here increments the score in the leaderboard cache
 	res := RDB.ZIncrBy(ctx, "user_pets", 1, u)
+	res2, err := RDB.HIncrBy(ctx, getHashKeyFromUID(u), "PetCount", 1).Result()
 	log.Println(res)
+	log.Println(res2)
+	if err != nil {
+		log.Fatalf("Error incrementing pet count: %v", err)
+	}
 	printTopTen()
 }
 
@@ -45,7 +51,7 @@ func printTopTen() {
 	fmt.Println(res, err)
 }
 
-// loadFromDatabase loads the user data from db into cache
+// loadFromDatabase loads the user data from db into leaderboard cache.
 func loadFromDatabase() {
 	log.Println("Loading data into redis...")
 
@@ -84,7 +90,7 @@ func InsertIntoHash(user *models.User) {
 		"SyncCode", user.SyncCode,
 	}
 	log.Println(hashFields)
-	res, err := RDB.HSet(ctx, user.GetHashKey(), hashFields).Result()
+	res, err := RDB.HSet(ctx, getHashKeyFromUID(user.UserID), hashFields).Result()
 
 	if err != nil {
 		log.Printf("== ERROR SETTING HASH FIELDS FOR USER %s ==\n", user.DisplayName)
@@ -97,21 +103,21 @@ func InsertIntoHash(user *models.User) {
 
 func GetFromHash(uid string) (*models.User, error) {
 	// hacky quick thing to get key from uid
-	uid = fmt.Sprintf("users:%s", uid)
-	exists, err := RDB.Exists(ctx, uid).Result()
+	key := getHashKeyFromUID(uid)
+	exists, err := RDB.Exists(ctx, key).Result()
 
 	if err != nil {
 		log.Println("Error checking for user:", err)
 	}
 
 	if exists == 0 {
-		log.Println("User does not exist", uid)
+		log.Println("User does not exist", key)
 		return nil, nil
 	}
 
-	log.Println("User found:", uid)
+	log.Println("User found:", key)
 
-	userData, err := RDB.HGetAll(ctx, uid).Result()
+	userData, err := RDB.HGetAll(ctx, key).Result()
 	if err != nil {
 		log.Println("Error getting user from database:", err)
 	}
@@ -122,7 +128,9 @@ func GetFromHash(uid string) (*models.User, error) {
 
 	user.UserID = uid
 	user.DisplayName = userData["DisplayName"]
-	user.PetCount, _ = strconv.Atoi(userData["PetCount"])
+	log.Println("PET COUNT:", userData["PetCount"])
+	user.PetCount, err = strconv.Atoi(userData["PetCount"])
+	log.Println(user.PetCount)
 	user.SyncCode = userData["SyncCode"]
 
 	return user, err
@@ -143,4 +151,8 @@ func GetTopPlayersWithScores() []playerScore {
 	}
 
 	return players
+}
+
+func getHashKeyFromUID(uid string) string {
+	return fmt.Sprintf("users:%s", uid)
 }

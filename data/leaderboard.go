@@ -20,10 +20,10 @@ func InitLeaderboard() {
 	top := GetTopPlayersWithScores()
 
 	for i, user := range top {
-		log.Println("Index:", i, "User:", user)
+		log.Println("Index:", i, "User:", user.user)
+
 		newRow := LeaderboardRow{Position: i + 1, PetCount: 69, DisplayName: "WIP"}
 
 		log.Println(newRow)
 	}
-
 }

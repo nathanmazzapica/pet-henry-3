@@ -28,17 +28,31 @@ func prepareUserData(w http.ResponseWriter, r *http.Request) *models.User {
 			return nil
 		}
 	} else {
-		user, err = data.GetUserFromDB(userIDCookie.Value)
+		user, err = data.GetFromHash(userIDCookie.Value)
+
+		if user == nil {
+			log.Println("Fetching user data for", r.RemoteAddr, "from DB")
+			user, err = data.GetUserFromDB(userIDCookie.Value)
+			// reflect on error handling .. .
+			data.InsertIntoHash(user)
+		} else {
+			log.Printf("Retrieved user data for %s{%v} from cache", r.RemoteAddr, user.DisplayName)
+		}
 		if err != nil {
 			fmt.Println(err)
 		}
 
 	}
 
+	log.Println("Prepared pets: ", user.PetCount)
+
 	return user
 }
 
 func prepareHomeData(user *models.User) models.HomeData {
+	log.Println("Preparing home data")
+	log.Printf("User ID: %s\n", user.UserID)
+	log.Printf("User pets: %v", user.PetCount)
 	return models.HomeData{
 		User:      user.DisplayName,
 		SyncCode:  user.SyncCode,
