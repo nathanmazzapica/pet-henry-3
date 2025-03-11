@@ -111,14 +111,21 @@ func GetFromHash(uid string) (*models.User, error) {
 
 	log.Println("User found:", uid)
 
-	user, err := RDB.HGetAll(ctx, uid).Result()
+	userData, err := RDB.HGetAll(ctx, uid).Result()
 	if err != nil {
 		log.Println("Error getting user from database:", err)
 	}
 
-	fmt.Println(user)
+	fmt.Println(userData)
 
-	return &models.User{}, err
+	user := &models.User{}
+
+	user.UserID = uid
+	user.DisplayName = userData["DisplayName"]
+	user.PetCount, _ = strconv.Atoi(userData["PetCount"])
+	user.SyncCode = userData["SyncCode"]
+
+	return user, err
 }
 
 type playerScore struct {
