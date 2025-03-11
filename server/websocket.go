@@ -126,6 +126,7 @@ func broadcastEvent() {
 
 func closeConnection(client *models.Client) {
 	clientsLock.Lock()
+	data.SaveToDB(client.User)
 	delete(clients, client)
 	clientsLock.Unlock()
 	client.Conn.Close()

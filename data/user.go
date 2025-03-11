@@ -10,6 +10,19 @@ import (
 	"pet-henry-3/models"
 )
 
+func SaveToDB(u *models.User) {
+	log.Printf("Saving %s to database", u.DisplayName)
+
+	_, err := DB.Exec("UPDATE users SET pet_count=? WHERE user_id=?", u.PetCount, u.UserID)
+
+	if err != nil {
+		log.Println("Unexpected error updating user to DB", err)
+		return
+	}
+
+	log.Printf("User %s saved to database\n", u.DisplayName)
+}
+
 func CreateNewUser() *models.User {
 	userID := uuid.New().String()
 	displayName := getRandomDisplayName()
